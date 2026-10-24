@@ -16,7 +16,7 @@ class NetworkClient {
 
   connect(host, port) {
     return new Promise((resolve, reject) => {
-      const url = `http://${host}:${port}`;
+      const url = /^https?:\\/\\//i.test(host) ? host.replace(/\\/$/, '') : `${window.location.protocol === 'https:' ? 'https' : 'http'}://${host}:${port}`;
       const timeout = setTimeout(() => {
         reject(new Error('Tiempo de espera agotado (5s)'));
       }, 5000);
