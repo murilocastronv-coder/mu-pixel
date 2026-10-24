@@ -250,11 +250,53 @@
 <script src="Game.js"></script>
 
 <script>
-  // Iniciar cuando el DOM y los scripts están listos
-  window.addEventListener('load', () => {
-    window.game = new Game();
-    game.init();
+  // Arranque tolerante a errores: nunca dejar la pantalla negra cargando para siempre.
+  function showStartupError(message) {
+    const loading = document.getElementById('loading');
+    if (loading) {
+      loading.style.display = 'none';
+      loading.innerHTML = '';
+    }
+    const screen = document.getElementById('connect-screen');
+    if (screen) screen.style.display = 'flex';
+    const error = document.getElementById('connect-error');
+    if (error) error.textContent = message || 'No se pudo iniciar el juego. Recarga la página.';
+    const button = document.getElementById('connect-btn');
+    if (button) { button.disabled = true; button.textContent = 'JUEGO NO DISPONIBLE'; }
+  }
+
+  window.addEventListener('error', (event) => {
+    console.error('[STARTUP]', event.message || event.error);
+    if (!window.game) showStartupError('Error al cargar archivos del juego. Recarga la página.');
   });
+
+  window.addEventListener('load', () => {
+    const loading = document.getElementById('loading');
+    try {
+      if (typeof window.Game !== 'function') {
+        throw new Error('Game.js no se cargó');
+      }
+      window.game = new Game();
+      game.init();
+      // Salvaguarda para cualquier error durante el arranque.
+      setTimeout(() => {
+        if (loading && loading.style.display !== 'none') {
+          showStartupError('El juego tardó demasiado en iniciar. Recarga la página.');
+        }
+      }, 5000);
+    } catch (error) {
+      console.error('[STARTUP]', error);
+      showStartupError('No se pudo iniciar el juego: ' + (error.message || 'error desconocido'));
+    }
+  });
+
+  // Último recurso: retirar el overlay incluso si el evento load no ocurre.
+  setTimeout(() => {
+    const loading = document.getElementById('loading');
+    if (loading && loading.style.display !== 'none' && !window.game) {
+      showStartupError('Los archivos del juego no terminaron de cargar. Actualiza la página.');
+    }
+  }, 8000);
 </script>
 </body>
 </html>
