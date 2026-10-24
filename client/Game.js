@@ -41,6 +41,12 @@ class Game {
     setTimeout(() => {
       document.getElementById('loading').style.display = 'none';
       this._showConnectScreen();
+      // Conexión pública automática: no pedir IP ni puerto al jugador.
+      const hostInput = document.getElementById('server-ip');
+      const portInput = document.getElementById('server-port');
+      if (hostInput) hostInput.value = 'world-of-claudecraft-murilo.onrender.com';
+      if (portInput) portInput.value = '443';
+      this._doConnect();
     }, 800);
   }
 
@@ -79,11 +85,11 @@ class Game {
 
   async _doConnect() {
     const host = document.getElementById('server-ip').value.trim();
-    const port = parseInt(document.getElementById('server-port').value) || 3000;
+    const port = parseInt(document.getElementById('server-port').value) || 443;
     const errEl = document.getElementById('connect-error');
     const btn   = document.getElementById('connect-btn');
 
-    if (!host) { errEl.textContent = 'Ingresa la IP del servidor.'; return; }
+    if (!host) { errEl.textContent = 'No se pudo encontrar el servidor público.'; return; }
 
     btn.textContent = 'Conectando...';
     btn.disabled = true;
